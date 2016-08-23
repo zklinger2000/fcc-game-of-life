@@ -83,7 +83,6 @@ const getNeighborhoodPop = (board, cell) => {
 };
 // Update Grid according to next generation
 const updateGridNextGen = (board) => {
-  console.log('updateGridNextGen');
   const { width, height, grid, scale } = board;
   const newGrid = {};
   let pop = 0;
@@ -92,8 +91,8 @@ const updateGridNextGen = (board) => {
     for (let y = 0; y < height / scale; ++y) {
       cell = grid[cellName(x, y)];
       pop = getNeighborhoodPop(board, cell);
-      // TODO remove after dev
-      if (cell.alive && pop < 3) {
+
+      if (cell.alive && (pop < 3 || pop > 4)) {
         newGrid[cellName(x, y)] = Object.assign(
           {},
           cell,
@@ -104,12 +103,6 @@ const updateGridNextGen = (board) => {
           {},
           cell,
           { age: cell.age + 1 }
-        );
-      } else if (cell.alive && pop > 4) {
-        newGrid[cellName(x, y)] = Object.assign(
-          {},
-          cell,
-          { alive: 0, age: 0 }
         );
       } else if (!cell.alive && pop === 3) {
         newGrid[cellName(x, y)] = Object.assign(
@@ -129,14 +122,11 @@ const updateGridNextGen = (board) => {
 };
 // Board Reducer
 const boardReducer = (state = initialState.board, action) => {
-  let grid;
   switch (action.type) {
     case TOGGLE_CELL:
-      // grid = updateGridAfterToggle(state.grid, action.payload.cell);
       return Object.assign({}, state, { grid: updateGridAfterToggle(state.grid, action.payload.cell) });
     case NEXT_GRID:
-      grid = updateGridNextGen(state);
-      return Object.assign({}, state, { grid });
+      return Object.assign({}, state, { grid: updateGridNextGen(state) });
     default:
       return state;
   }
