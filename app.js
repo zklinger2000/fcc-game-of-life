@@ -7,29 +7,59 @@ const { createStore, combineReducers } = Redux;
 const cellName = (x, y) => {
   return x + '-' + y;
 };
-// Cell
+
+// Cell factory
 const initCell = (x, y, alive = 0, age = 0) => {
   return { x, y, alive, age };
 };
-// Setup Board State
-const initBoard = (width = 500, height = 500, scale = 100) => {
-  const results = { width, height, scale, grid: {} };
 
-  for (let x = 0; x < width / scale; ++x) {
-    for (let y = 0; y < height / scale; ++y) {
+// Setup Board State
+const initBoard = (size, width = 320, height = 544, scale = 32) => {
+  const results = { // return object containing the 'board' state
+    grid: {},
+    counter: 0
+  };
+  switch(size) {
+    case 'small':
+      Object.assign(results, {
+        width: 320,
+        height: 544,
+        scale: 32
+      });
+      break;
+    case '':
+      Object.assign(results, {
+        width,
+        height,
+        scale
+      });
+      break;
+    default:
+      Object.assign(results, {
+        width: 300,
+        height: 300,
+        scale: 100
+      });
+  }
+  // Add cells to grid
+  for (let x = 0; x < results.width / results.scale; ++x) {
+    for (let y = 0; y < results.height / results.scale; ++y) {
       results.grid[cellName(x, y)] = (initCell(x, y));
     }
   }
   return results;
 };
-// Initial State Shape
+
+// Initial State
 const initialState = {
-  board: initBoard(),
+  board: initBoard('small'),
 };
+
 // Action Types
 const TOGGLE_CELL = 'board/grid/TOGGLE_CELL';
 const NEXT_GRID = 'board/grid/NEXT_GRID';
-// Action Creators
+
+// Action creator
 const toggleCell = (cell) => {
   return {
     type: TOGGLE_CELL,
@@ -38,6 +68,7 @@ const toggleCell = (cell) => {
     }
   };
 };
+
 // Update Grid after click toggle
 const updateGridAfterToggle = (grid, cellName) => {
   return _.mapObject(grid, (cell) => {
@@ -49,11 +80,14 @@ const updateGridAfterToggle = (grid, cellName) => {
     return cell;
   });
 };
+
+// Action creator
 const nextGrid = () => {
   return {
     type: NEXT_GRID
   };
 };
+
 // Return the proper index for edge cases
 const checkBoundary = (value, size) => {
   if (value === -1) {
@@ -63,6 +97,7 @@ const checkBoundary = (value, size) => {
   }
   return value;
 };
+
 // Get neighborhood population
 const getNeighborhoodPop = (board, cell) => {
   const { width, height, scale } = board;
@@ -81,6 +116,7 @@ const getNeighborhoodPop = (board, cell) => {
     return acc + cell.alive;
   }, 0);
 };
+
 // Update Grid according to next generation
 const updateGridNextGen = (board) => {
   const { width, height, grid, scale } = board;
@@ -120,21 +156,29 @@ const updateGridNextGen = (board) => {
   }
   return newGrid;
 };
+
 // Board Reducer
 const boardReducer = (state = initialState.board, action) => {
   switch (action.type) {
     case TOGGLE_CELL:
-      return Object.assign({}, state, { grid: updateGridAfterToggle(state.grid, action.payload.cell) });
+      return Object.assign({}, state, {
+        grid: updateGridAfterToggle(state.grid, action.payload.cell)
+      });
     case NEXT_GRID:
-      return Object.assign({}, state, { grid: updateGridNextGen(state) });
+      return Object.assign({}, state, {
+        counter: state.counter + 1,
+        grid: updateGridNextGen(state)
+      });
     default:
       return state;
   }
 };
+
 // Root Reducer passed to store
 const rootReducer = combineReducers({
   board: boardReducer,
 });
+
 // Render function for updating the canvas
 const renderGrid = (board, canvas, ctx) => {
   const { width, height, scale, grid } = board;
@@ -143,8 +187,11 @@ const renderGrid = (board, canvas, ctx) => {
       ctx.fillStyle = '#FF0000';
       ctx.fillRect(cell.x * scale, cell.y * scale, scale, scale);
     }
+    ctx.strokeStyle = '#424242';
+    ctx.strokeRect(cell.x * scale, cell.y * scale, scale, scale);
   });
 };
+
 // Returns the position as a string in the 'x-y' format
 const getCursorPosition = (event, canvas, board) => {
   const { scale } = board;
@@ -154,6 +201,7 @@ const getCursorPosition = (event, canvas, board) => {
 
   return cellName(x, y);
 };
+
 // Board Component renders the board's current state and adds click handler for cells
 class Board extends Component {
   constructor(props, context) {
@@ -215,6 +263,7 @@ class Game extends Component {
 
     return (
       <div className="game-wrapper">
+        <div className="counter">{board.counter}</div>
         <Board board={board} toggleCell={toggleCell} />
         <button type="button" className="btn btn-primary" onClick={nextGrid}>next</button>
       </div>
@@ -251,8 +300,18 @@ const App = connect(
 )(Game);
 
 ReactDOM.render(
-  <Provider store={createStore(rootReducer, window.devToolsExtension && window.devToolsExtension())}>
+  <Provider store={createStore(
+    rootReducer,
+    window.devToolsExtension && window.devToolsExtension()
+  )}>
     <App />
   </Provider>,
   document.getElementById('app')
 );
+
+// TODO: Add Play button
+// TODO: Add Pause button
+// TODO: Add Reset button
+// TODO: Add Slow | Normal | Fast playrate toggles
+// TODO: Add Small | Medium | Large grid scale toggles
+// TODO: Add logic to Randomize board and start the game on load
