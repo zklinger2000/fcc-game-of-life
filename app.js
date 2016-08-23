@@ -72,8 +72,8 @@ const getNeighborhoodPop = (board, cell) => {
     for (let y = 0; y < 3; ++y) {
       neighborHood.push(board.grid[cellName(
         checkBoundary(cell.x + 1 - x, width / scale),
-        checkBoundary(cell.y + 1 - y, height / scale))]
-      );
+        checkBoundary(cell.y + 1 - y, height / scale)
+      )]);
     }
   }
 
