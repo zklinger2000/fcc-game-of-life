@@ -17,7 +17,8 @@ const initCell = (x, y, alive = 0, age = 0) => {
 const initBoard = (size, width = 320, height = 544, scale = 32) => {
   const results = { // return object containing the 'board' state
     grid: {},
-    counter: 0
+    counter: 0,
+    isPlaying: false
   };
   switch(size) {
     case 'small':
@@ -58,14 +59,27 @@ const initialState = {
 // Action Types
 const TOGGLE_CELL = 'board/grid/TOGGLE_CELL';
 const NEXT_GRID = 'board/grid/NEXT_GRID';
+const START_PLAY = 'board/START_PLAY';
 
-// Action creator
+// Action creators
 const toggleCell = (cell) => {
   return {
     type: TOGGLE_CELL,
     payload: {
       cell
     }
+  };
+};
+
+const nextGrid = () => {
+  return {
+    type: NEXT_GRID
+  };
+};
+
+const startPlay = () => {
+  return {
+    type: START_PLAY
   };
 };
 
@@ -79,13 +93,6 @@ const updateGridAfterToggle = (grid, cellName) => {
     }
     return cell;
   });
-};
-
-// Action creator
-const nextGrid = () => {
-  return {
-    type: NEXT_GRID
-  };
 };
 
 // Return the proper index for edge cases
@@ -169,6 +176,10 @@ const boardReducer = (state = initialState.board, action) => {
         counter: state.counter + 1,
         grid: updateGridNextGen(state)
       });
+    case START_PLAY:
+      return Object.assign({}, state, {
+        isPlaying: true
+      });
     default:
       return state;
   }
@@ -216,7 +227,7 @@ class Board extends Component {
   componentDidMount() {
     const canvas = document.getElementById("myCanvas");
     const ctx = canvas.getContext("2d");
-    const { board } = this.props;
+    const { board, dispatch } = this.props;
 
     this.setState({
       canvas,
@@ -258,14 +269,46 @@ Board.propTypes = {
 };
 
 class Game extends Component {
+  constructor(props, context) {
+    super(props, context);
+
+    this.state = {
+      isPlaying: props.board.isPlaying
+    };
+
+    this.setPlayRates = this.setPlayRates.bind(this);
+  }
+
+  componentDidMount() {
+    this.setPlayRates();
+  }
+
+  componentWillReceiveProps(nextProps, nextContext) {
+    this.setState({
+      isPlaying: nextProps.board.isPlaying
+    });
+  }
+
+  setPlayRates() {
+    const { nextGrid } = this.props;
+    console.log(this.state.isPlaying);
+
+    setInterval(() => {
+      if (this.state.isPlaying) {
+        nextGrid();
+      }
+    }, 500);
+  }
+
   render() {
-    const { board, toggleCell, nextGrid } = this.props;
+    const { board, toggleCell, nextGrid, startPlay } = this.props;
 
     return (
       <div className="game-wrapper">
         <div className="counter">{board.counter}</div>
         <Board board={board} toggleCell={toggleCell} />
-        <button type="button" className="btn btn-primary" onClick={nextGrid}>next</button>
+        <button type="button" className="btn btn-primary" onClick={nextGrid}>Next</button>
+        <button type="button" className="btn btn-primary" onClick={startPlay}>Start</button>
       </div>
     );
   }
@@ -284,12 +327,16 @@ const mapStateToProps = (state) => {
 };
 
 const mapDispatchToProps = (dispatch) => {
+  let timer;
   return {
     toggleCell: (cell) => {
       dispatch(toggleCell(cell));
     },
     nextGrid: () => {
       dispatch(nextGrid());
+    },
+    startPlay: () => {
+      dispatch(startPlay());
     }
   };
 };
@@ -309,7 +356,6 @@ ReactDOM.render(
   document.getElementById('app')
 );
 
-// TODO: Add Play button
 // TODO: Add Pause button
 // TODO: Add Reset button
 // TODO: Add Slow | Normal | Fast playrate toggles
