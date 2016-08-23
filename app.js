@@ -60,6 +60,7 @@ const initialState = {
 const TOGGLE_CELL = 'board/grid/TOGGLE_CELL';
 const NEXT_GRID = 'board/grid/NEXT_GRID';
 const START_PLAY = 'board/START_PLAY';
+const STOP_PLAY = 'board/STOP_PLAY';
 
 // Action creators
 const toggleCell = (cell) => {
@@ -80,6 +81,12 @@ const nextGrid = () => {
 const startPlay = () => {
   return {
     type: START_PLAY
+  };
+};
+
+const stopPlay = () => {
+  return {
+    type: STOP_PLAY
   };
 };
 
@@ -179,6 +186,10 @@ const boardReducer = (state = initialState.board, action) => {
     case START_PLAY:
       return Object.assign({}, state, {
         isPlaying: true
+      });
+    case STOP_PLAY:
+      return Object.assign({}, state, {
+        isPlaying: false
       });
     default:
       return state;
@@ -301,7 +312,7 @@ class Game extends Component {
   }
 
   render() {
-    const { board, toggleCell, nextGrid, startPlay } = this.props;
+    const { board, toggleCell, nextGrid, startPlay, stopPlay } = this.props;
 
     return (
       <div className="game-wrapper">
@@ -309,6 +320,7 @@ class Game extends Component {
         <Board board={board} toggleCell={toggleCell} />
         <button type="button" className="btn btn-primary" onClick={nextGrid}>Next</button>
         <button type="button" className="btn btn-primary" onClick={startPlay}>Start</button>
+        <button type="button" className="btn btn-primary" onClick={stopPlay}>Pause</button>
       </div>
     );
   }
@@ -317,7 +329,9 @@ class Game extends Component {
 Game.propTypes = {
   board: PropTypes.object.isRequired,
   toggleCell: PropTypes.func.isRequired,
-  nextGrid: PropTypes.func.isRequired
+  nextGrid: PropTypes.func.isRequired,
+  startPlay: PropTypes.func.isRequired,
+  stopPlay: PropTypes.func.isRequired
 };
 
 const mapStateToProps = (state) => {
@@ -337,6 +351,9 @@ const mapDispatchToProps = (dispatch) => {
     },
     startPlay: () => {
       dispatch(startPlay());
+    },
+    stopPlay: () => {
+      dispatch(stopPlay());
     }
   };
 };
@@ -356,7 +373,6 @@ ReactDOM.render(
   document.getElementById('app')
 );
 
-// TODO: Add Pause button
 // TODO: Add Reset button
 // TODO: Add Slow | Normal | Fast playrate toggles
 // TODO: Add Small | Medium | Large grid scale toggles
