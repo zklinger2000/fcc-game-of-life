@@ -32,8 +32,8 @@ const initBoard = (size, width = 320, height = 544, scale = 32) => {
       break;
     case 'medium':
       Object.assign(results, {
-        width: 640,
-        height: 480,
+        width: 768,
+        height: 512,
         scale: 32,
         size
       });
@@ -82,6 +82,7 @@ const START_PLAY = 'board/START_PLAY';
 const STOP_PLAY = 'board/STOP_PLAY';
 const CLEAR_GRID = 'board/CLEAR_GRID';
 const SET_SPEED = 'board/SET_SPEED';
+const SEED_GRID = 'board/grid/SEED_GRID';
 
 // Action creators
 const toggleCell = (cell) => {
@@ -126,6 +127,12 @@ const setSpeed = (speed) => {
     payload: {
       speed
     }
+  };
+};
+
+const seedGrid = () => {
+  return {
+    type: SEED_GRID
   };
 };
 
@@ -212,6 +219,27 @@ const updateGridNextGen = (board) => {
   return nextGrid;
 };
 
+// Randomize the cells' alive status
+const randomizeGrid = (board) => {
+  const { width, height, grid, scale } = board;
+  const nextGrid = {};
+  let cell = {};
+  let alive = 0;
+  // Loop through cells and assign random alive status
+  for (let x = 0; x < width / scale; ++x) {
+    for (let y = 0; y < height / scale; ++y) {
+      cell = grid[cellName(x, y)];
+      alive = Math.round(Math.random());
+      nextGrid[cellName(x, y)] = Object.assign(
+        {},
+        cell,
+        { alive, age: 1 }
+      );
+    }
+  }
+  return nextGrid;
+};
+
 // Board Reducer
 const boardReducer = (state = initialState.board, action) => {
   switch (action.type) {
@@ -237,6 +265,10 @@ const boardReducer = (state = initialState.board, action) => {
     case SET_SPEED:
       return Object.assign({}, state, {
         speed: action.payload.speed
+      });
+    case SEED_GRID:
+      return Object.assign({}, state, {
+        grid: randomizeGrid(state)
       });
     default:
       return state;
@@ -326,6 +358,15 @@ Board.propTypes = {
   toggleCell: PropTypes.func.isRequired
 };
 
+const screenSizeHelper = () => {
+  if (window.innerWidth < 768) {
+    return 'small';
+  } else if (window.innerWidth < 1024) {
+    return 'medium';
+  }
+  return 'large';
+};
+
 class Game extends Component {
   constructor(props, context) {
     super(props, context);
@@ -339,7 +380,12 @@ class Game extends Component {
   }
 
   componentDidMount() {
+    const { clearGrid, seedGrid, startPlay } = this.props;
+
     this.setPlayRates();
+    clearGrid(screenSizeHelper());
+    seedGrid();
+    startPlay();
   }
 
   componentWillReceiveProps(nextProps) {
@@ -408,7 +454,8 @@ Game.propTypes = {
   startPlay: PropTypes.func.isRequired,
   stopPlay: PropTypes.func.isRequired,
   clearGrid: PropTypes.func.isRequired,
-  setSpeed: PropTypes.func.isRequired
+  setSpeed: PropTypes.func.isRequired,
+  seedGrid: PropTypes.func.isRequired
 };
 
 const mapStateToProps = (state) => {
@@ -436,6 +483,9 @@ const mapDispatchToProps = (dispatch) => {
     },
     setSpeed: (speed) => {
       dispatch(setSpeed(speed));
+    },
+    seedGrid: () => {
+      dispatch(seedGrid());
     }
   };
 };
@@ -455,4 +505,5 @@ ReactDOM.render(
   document.getElementById('app')
 );
 
-// TODO: Add logic to Randomize board and start the game on load
+// TODO: Make buttons visible based on screen size
+// TODO: Kill setIntervals? on unmount?
