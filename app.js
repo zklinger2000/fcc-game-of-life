@@ -18,13 +18,14 @@ const initBoard = (size, width = 320, height = 544, scale = 32) => {
   const results = { // return object containing the 'board' state
     grid: {},
     counter: 0,
-    isPlaying: false
+    isPlaying: false,
+    speed: '1x'
   };
   switch(size) {
     case 'small':
       Object.assign(results, {
         width: 320,
-        height: 480,
+        height: 512,
         scale: 32,
         size
       });
@@ -80,6 +81,7 @@ const NEXT_GRID = 'board/grid/NEXT_GRID';
 const START_PLAY = 'board/START_PLAY';
 const STOP_PLAY = 'board/STOP_PLAY';
 const CLEAR_GRID = 'board/CLEAR_GRID';
+const SET_SPEED = 'board/SET_SPEED';
 
 // Action creators
 const toggleCell = (cell) => {
@@ -118,6 +120,15 @@ const clearGrid = (size) => {
   };
 };
 
+const setSpeed = (speed) => {
+  return {
+    type: SET_SPEED,
+    payload: {
+      speed
+    }
+  };
+};
+
 // Update Grid after click toggle
 const updateGridAfterToggle = (grid, cellName) => {
   return _.mapObject(grid, (cell) => {
@@ -145,6 +156,7 @@ const getNeighborhoodPop = (board, cell) => {
   const { width, height, scale } = board;
   const neighborHood = [];
 
+  // Grab the 3x3 grid of cells around cell argument
   for (let x = 0; x < 3; ++x) {
     for (let y = 0; y < 3; ++y) {
       neighborHood.push(board.grid[cellName(
@@ -153,7 +165,7 @@ const getNeighborhoodPop = (board, cell) => {
       )]);
     }
   }
-
+  // Return number of live cells in 3x3 grid
   return neighborHood.reduce((acc, cell) => {
     return acc + cell.alive;
   }, 0);
@@ -162,41 +174,42 @@ const getNeighborhoodPop = (board, cell) => {
 // Update Grid according to next generation
 const updateGridNextGen = (board) => {
   const { width, height, grid, scale } = board;
-  const newGrid = {};
+  const nextGrid = {};
   let pop = 0;
   let cell = {};
+  // Loop through cells and update status according to game of life rules
   for (let x = 0; x < width / scale; ++x) {
     for (let y = 0; y < height / scale; ++y) {
       cell = grid[cellName(x, y)];
       pop = getNeighborhoodPop(board, cell);
 
       if (cell.alive && (pop < 3 || pop > 4)) {
-        newGrid[cellName(x, y)] = Object.assign(
+        nextGrid[cellName(x, y)] = Object.assign(
           {},
           cell,
           { alive: 0, age: 0 }
         );
       } else if (cell.alive && pop === 3 || pop === 4) {
-        newGrid[cellName(x, y)] = Object.assign(
+        nextGrid[cellName(x, y)] = Object.assign(
           {},
           cell,
           { age: cell.age + 1 }
         );
       } else if (!cell.alive && pop === 3) {
-        newGrid[cellName(x, y)] = Object.assign(
+        nextGrid[cellName(x, y)] = Object.assign(
           {},
           cell,
           { alive: 1, age: 1 }
         );
       } else {
-        newGrid[cellName(x, y)] = Object.assign(
+        nextGrid[cellName(x, y)] = Object.assign(
           {},
           cell
         );
       }
     }
   }
-  return newGrid;
+  return nextGrid;
 };
 
 // Board Reducer
@@ -221,6 +234,10 @@ const boardReducer = (state = initialState.board, action) => {
       });
     case CLEAR_GRID:
       return initBoard(action.payload.size);
+    case SET_SPEED:
+      return Object.assign({}, state, {
+        speed: action.payload.speed
+      });
     default:
       return state;
   }
@@ -233,7 +250,7 @@ const rootReducer = combineReducers({
 
 // Render function for updating the canvas
 const renderGrid = (board, canvas, ctx) => {
-  const { width, height, scale, grid } = board;
+  const { scale, grid } = board;
   _.each(grid, (cell) => {
     if (cell.alive) {
       ctx.fillStyle = '#FF0000';
@@ -268,7 +285,7 @@ class Board extends Component {
   componentDidMount() {
     const canvas = document.getElementById("myCanvas");
     const ctx = canvas.getContext("2d");
-    const { board, dispatch } = this.props;
+    const { board } = this.props;
 
     this.setState({
       canvas,
@@ -278,7 +295,7 @@ class Board extends Component {
     renderGrid(board, canvas, ctx);
   }
 
-  componentDidUpdate(prevProps, prevState, prevContext) {
+  componentDidUpdate() {
     const { board } = this.props;
     const { canvas, ctx } = this.state;
 
@@ -288,7 +305,7 @@ class Board extends Component {
 
   render() {
     const { board, toggleCell } = this.props;
-    const { canvas, ctx } = this.state;
+    const { canvas } = this.state;
 
     return (
       <canvas
@@ -314,7 +331,8 @@ class Game extends Component {
     super(props, context);
 
     this.state = {
-      isPlaying: props.board.isPlaying
+      isPlaying: props.board.isPlaying,
+      speed: props.board.speed
     };
 
     this.setPlayRates = this.setPlayRates.bind(this);
@@ -324,21 +342,33 @@ class Game extends Component {
     this.setPlayRates();
   }
 
-  componentWillReceiveProps(nextProps, nextContext) {
+  componentWillReceiveProps(nextProps) {
     this.setState({
-      isPlaying: nextProps.board.isPlaying
+      isPlaying: nextProps.board.isPlaying,
+      speed: nextProps.board.speed
     });
   }
 
   setPlayRates() {
     const { nextGrid } = this.props;
-    console.log(this.state.isPlaying);
 
     setInterval(() => {
-      if (this.state.isPlaying) {
+      if (this.state.isPlaying && this.state.speed === '1x') {
         nextGrid();
       }
-    }, 500);
+    }, 100);
+
+    setInterval(() => {
+      if (this.state.isPlaying && this.state.speed === '2x') {
+        nextGrid();
+      }
+    }, 50);
+
+    setInterval(() => {
+      if (this.state.isPlaying && this.state.speed === '0.5x') {
+        nextGrid();
+      }
+    }, 300);
   }
 
   render() {
@@ -348,20 +378,24 @@ class Game extends Component {
       nextGrid,
       startPlay,
       stopPlay,
-      clearGrid
+      clearGrid,
+      setSpeed
     } = this.props;
 
     return (
       <div className="game-wrapper">
-        <div className="counter">{board.counter}</div>
         <Board board={board} toggleCell={toggleCell} />
-        <button type="button" className="btn btn-primary" onClick={nextGrid}>Next</button>
         <button type="button" className="btn btn-primary" onClick={startPlay}>Start</button>
         <button type="button" className="btn btn-primary" onClick={stopPlay}>Pause</button>
+        <button type="button" className="btn btn-primary" onClick={nextGrid}>Next</button>
         <button type="button" className="btn btn-primary" onClick={() => clearGrid(board.size)}>Clear</button>
+        <div className="counter">{board.counter}</div>
         <button type="button" className="btn btn-primary" onClick={() => clearGrid('small')}>Small</button>
         <button type="button" className="btn btn-primary" onClick={() => clearGrid('medium')}>Medium</button>
         <button type="button" className="btn btn-primary" onClick={() => clearGrid('large')}>Large</button>
+        <button type="button" className="btn btn-primary" onClick={() => setSpeed('0.5x')}>0.5x</button>
+        <button type="button" className="btn btn-primary" onClick={() => setSpeed('1x')}>1x</button>
+        <button type="button" className="btn btn-primary" onClick={() => setSpeed('2x')}>2x</button>
       </div>
     );
   }
@@ -373,7 +407,8 @@ Game.propTypes = {
   nextGrid: PropTypes.func.isRequired,
   startPlay: PropTypes.func.isRequired,
   stopPlay: PropTypes.func.isRequired,
-  clearGrid: PropTypes.func.isRequired
+  clearGrid: PropTypes.func.isRequired,
+  setSpeed: PropTypes.func.isRequired
 };
 
 const mapStateToProps = (state) => {
@@ -398,6 +433,9 @@ const mapDispatchToProps = (dispatch) => {
     },
     clearGrid: (size) => {
       dispatch(clearGrid(size));
+    },
+    setSpeed: (speed) => {
+      dispatch(setSpeed(speed));
     }
   };
 };
@@ -417,5 +455,4 @@ ReactDOM.render(
   document.getElementById('app')
 );
 
-// TODO: Add Slow | Normal | Fast playrate toggles
 // TODO: Add logic to Randomize board and start the game on load
