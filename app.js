@@ -253,7 +253,7 @@ const renderGrid = (board, canvas, ctx) => {
   const { scale, grid } = board;
   _.each(grid, (cell) => {
     if (cell.alive) {
-      ctx.fillStyle = '#FF0000';
+      ctx.fillStyle = cell.age === 1 ? '#FF8888' : '#FF0000';
       ctx.fillRect(cell.x * scale, cell.y * scale, scale, scale);
     }
     ctx.strokeStyle = '#424242';
