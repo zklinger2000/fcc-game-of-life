@@ -274,6 +274,7 @@ const boardReducer = (state = initialState.board, action) => {
       });
     case SEED_GRID:
       return Object.assign({}, state, {
+        counter: 0,
         grid: randomizeGrid(state)
       });
     case NEXT_GRID:
@@ -380,7 +381,7 @@ class Board extends Component {
         style={{backgroundColor: 'black'}}
         onClick={event => toggleCell(getCursorPosition(event, canvas, board))}
       >
-        Your browser doesn't support this app.
+        Your browser does not support this app.
       </canvas>
     );
   }
@@ -463,7 +464,8 @@ class Game extends Component {
       startPlay,
       stopPlay,
       clearGrid,
-      setSpeed
+      setSpeed,
+      seedGrid
     } = this.props;
 
     return (
@@ -479,6 +481,7 @@ class Game extends Component {
           <button type="button" className="btn btn-primary" onClick={startPlay}>Start</button>
           <button type="button" className="btn btn-primary" onClick={stopPlay}>Pause</button>
           <button type="button" className="btn btn-primary" onClick={nextGrid}>Next</button>
+          <button type="button" className="btn btn-primary" onClick={seedGrid}>Seed</button>
           <button type="button" className="btn btn-primary" onClick={() => clearGrid(board.size)}>Clear</button>
         </div>
         <div className="game-size sm-hidden">
@@ -505,6 +508,7 @@ class Game extends Component {
             <li>any dead cell with exactly 3 neighbors is born</li>
           </ul>
           <p>More info about The Game of Life can be found <a href="https://www.math.cornell.edu/~lipa/mec/lesson6.html" target="_blank">here</a>.</p>
+          <p>Original code on <a href="https://github.com/zklinger2000/fcc-game-of-life" target="_blank">Github</a>.</p>
         </div>
       </div>
     );
