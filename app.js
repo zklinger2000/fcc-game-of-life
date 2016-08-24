@@ -24,15 +24,33 @@ const initBoard = (size, width = 320, height = 544, scale = 32) => {
     case 'small':
       Object.assign(results, {
         width: 320,
-        height: 544,
-        scale: 32
+        height: 480,
+        scale: 32,
+        size
       });
       break;
-    case '':
+    case 'medium':
+      Object.assign(results, {
+        width: 640,
+        height: 480,
+        scale: 32,
+        size
+      });
+      break;
+    case 'large':
+      Object.assign(results, {
+        width: 1024,
+        height: 576,
+        scale: 32,
+        size
+      });
+      break;
+    case 'custom':
       Object.assign(results, {
         width,
         height,
-        scale
+        scale,
+        size
       });
       break;
     default:
@@ -61,6 +79,7 @@ const TOGGLE_CELL = 'board/grid/TOGGLE_CELL';
 const NEXT_GRID = 'board/grid/NEXT_GRID';
 const START_PLAY = 'board/START_PLAY';
 const STOP_PLAY = 'board/STOP_PLAY';
+const CLEAR_GRID = 'board/CLEAR_GRID';
 
 // Action creators
 const toggleCell = (cell) => {
@@ -87,6 +106,15 @@ const startPlay = () => {
 const stopPlay = () => {
   return {
     type: STOP_PLAY
+  };
+};
+
+const clearGrid = (size) => {
+  return {
+    type: CLEAR_GRID,
+    payload: {
+      size
+    }
   };
 };
 
@@ -191,6 +219,8 @@ const boardReducer = (state = initialState.board, action) => {
       return Object.assign({}, state, {
         isPlaying: false
       });
+    case CLEAR_GRID:
+      return initBoard(action.payload.size);
     default:
       return state;
   }
@@ -312,7 +342,14 @@ class Game extends Component {
   }
 
   render() {
-    const { board, toggleCell, nextGrid, startPlay, stopPlay } = this.props;
+    const {
+      board,
+      toggleCell,
+      nextGrid,
+      startPlay,
+      stopPlay,
+      clearGrid
+    } = this.props;
 
     return (
       <div className="game-wrapper">
@@ -321,6 +358,10 @@ class Game extends Component {
         <button type="button" className="btn btn-primary" onClick={nextGrid}>Next</button>
         <button type="button" className="btn btn-primary" onClick={startPlay}>Start</button>
         <button type="button" className="btn btn-primary" onClick={stopPlay}>Pause</button>
+        <button type="button" className="btn btn-primary" onClick={() => clearGrid(board.size)}>Clear</button>
+        <button type="button" className="btn btn-primary" onClick={() => clearGrid('small')}>Small</button>
+        <button type="button" className="btn btn-primary" onClick={() => clearGrid('medium')}>Medium</button>
+        <button type="button" className="btn btn-primary" onClick={() => clearGrid('large')}>Large</button>
       </div>
     );
   }
@@ -331,7 +372,8 @@ Game.propTypes = {
   toggleCell: PropTypes.func.isRequired,
   nextGrid: PropTypes.func.isRequired,
   startPlay: PropTypes.func.isRequired,
-  stopPlay: PropTypes.func.isRequired
+  stopPlay: PropTypes.func.isRequired,
+  clearGrid: PropTypes.func.isRequired
 };
 
 const mapStateToProps = (state) => {
@@ -341,7 +383,6 @@ const mapStateToProps = (state) => {
 };
 
 const mapDispatchToProps = (dispatch) => {
-  let timer;
   return {
     toggleCell: (cell) => {
       dispatch(toggleCell(cell));
@@ -354,6 +395,9 @@ const mapDispatchToProps = (dispatch) => {
     },
     stopPlay: () => {
       dispatch(stopPlay());
+    },
+    clearGrid: (size) => {
+      dispatch(clearGrid(size));
     }
   };
 };
@@ -373,7 +417,5 @@ ReactDOM.render(
   document.getElementById('app')
 );
 
-// TODO: Add Reset button
 // TODO: Add Slow | Normal | Fast playrate toggles
-// TODO: Add Small | Medium | Large grid scale toggles
 // TODO: Add logic to Randomize board and start the game on load
