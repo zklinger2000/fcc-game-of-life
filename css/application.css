@@ -1,9 +1,64 @@
-* {
-  padding: 0;
+body {
   margin: 0;
-}
-canvas {
-  background: #eee;
-  display: block;
-  margin: 0 auto;
-}
+  padding: 0;
+  background-color: #424242;
+  width: 100%; }
+
+.game-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  max-width: 768px;
+  margin: 5px auto; }
+  @media only screen and (min-width: 1024px) {
+    .game-wrapper {
+      max-width: 1024px;
+      margin: 20px auto; } }
+  .game-wrapper .game-info,
+  .game-wrapper .game-controls,
+  .game-wrapper .game-size,
+  .game-wrapper .game-speed {
+    display: flex;
+    color: #eee;
+    width: 320px; }
+  .game-wrapper .game-info {
+    justify-content: space-between; }
+    .game-wrapper .game-info label, .game-wrapper .game-info .counter, .game-wrapper .game-info .dimensions {
+      margin: 10px 0; }
+    .game-wrapper .game-info button {
+      margin: 0 10px; }
+    .game-wrapper .game-info .counter {
+      min-width: 3em;
+      text-align: right; }
+  .game-wrapper .game-controls {
+    justify-content: space-between;
+    padding: 10px 0; }
+  .game-wrapper .game-size, .game-wrapper .game-speed {
+    justify-content: flex-end;
+    padding: 10px 0; }
+    .game-wrapper .game-size label, .game-wrapper .game-speed label {
+      margin-right: auto; }
+    .game-wrapper .game-size button, .game-wrapper .game-speed button {
+      margin: 0 0 0 10px; }
+  .game-wrapper .sm-hidden {
+    display: none; }
+    @media only screen and (min-width: 768px) {
+      .game-wrapper .sm-hidden {
+        display: inherit; } }
+  .game-wrapper .about {
+    padding: 10px 20px; }
+    @media only screen and (min-width: 1024px) {
+      .game-wrapper .about {
+        padding: 20px; } }
+    .game-wrapper .about h2, .game-wrapper .about h3, .game-wrapper .about p, .game-wrapper .about li {
+      color: #eee; }
+    .game-wrapper .about h2 {
+      text-align: center; }
+    .game-wrapper .about p {
+      text-align: left; }
+    .game-wrapper .about ul {
+      padding-left: 20px; }
+    .game-wrapper .about li {
+      padding: 5px 0; }
+
+/*# sourceMappingURL=application.css.map */

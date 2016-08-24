@@ -1,0 +1,86 @@
+$white      : #eee;
+$dark-grey  : #424242;
+
+body {
+  margin: 0;
+  padding: 0;
+  background-color: $dark-grey;
+  width: 100%;
+
+}
+.game-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  max-width: 768px;
+  margin: 5px auto;
+  @media only screen and (min-width: 1024px) {
+    max-width: 1024px;
+    margin: 20px auto;
+  }
+  .game-info,
+  .game-controls,
+  .game-size,
+  .game-speed {
+    display: flex;
+    color: $white;
+    width: 320px;
+  }
+  .game-info {
+    justify-content: space-between;
+    label, .counter, .dimensions {
+      margin: 10px 0;
+    }
+    button {
+      margin: 0 10px;
+    }
+    .counter {
+      min-width: 3em;
+      text-align: right;
+    }
+  }
+  .game-controls {
+    justify-content: space-between;
+    padding: 10px 0;
+  }
+  .game-size, .game-speed {
+    justify-content: flex-end;
+    padding: 10px 0;
+    label {
+      margin-right: auto;
+    }
+    button {
+      margin: 0 0 0 10px;
+    }
+  }
+  .game-speed {
+
+  }
+  .sm-hidden {
+    display: none;
+    @media only screen and (min-width: 768px) {
+      display: inherit;
+    }
+  }
+  .about {
+    padding: 10px 20px;
+    @media only screen and (min-width: 1024px) {
+      padding: 20px;
+    }
+    h2, h3, p, li {
+      color: $white;
+    }
+    h2 {
+      text-align: center;
+    }
+    p {
+      text-align: left;
+    }
+    ul {
+      padding-left: 20px
+    }
+    li {
+      padding: 5px 0;
+    }
+  }
+}

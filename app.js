@@ -469,17 +469,43 @@ class Game extends Component {
     return (
       <div className="game-wrapper">
         <Board board={board} toggleCell={toggleCell} />
-        <button type="button" className="btn btn-primary" onClick={startPlay}>Start</button>
-        <button type="button" className="btn btn-primary" onClick={stopPlay}>Pause</button>
-        <button type="button" className="btn btn-primary" onClick={nextGrid}>Next</button>
-        <button type="button" className="btn btn-primary" onClick={() => clearGrid(board.size)}>Clear</button>
-        <div className="counter">{board.counter}</div>
-        <button type="button" className="btn btn-primary" onClick={() => clearGrid('small')}>Small</button>
-        <button type="button" className="btn btn-primary" onClick={() => clearGrid('medium')}>Medium</button>
-        <button type="button" className="btn btn-primary" onClick={() => clearGrid('large')}>Large</button>
-        <button type="button" className="btn btn-primary" onClick={() => setSpeed('0.5x')}>0.5x</button>
-        <button type="button" className="btn btn-primary" onClick={() => setSpeed('1x')}>1x</button>
-        <button type="button" className="btn btn-primary" onClick={() => setSpeed('2x')}>2x</button>
+        <div className="game-info">
+          <label htmlFor="counter">Generation: </label>
+          <div className="counter" name="counter">{board.counter}</div>
+          <label htmlFor="dimensions">Map Size: </label>
+          <div className="dimensions" name="dimensions">{board.width / board.scale + ' x ' + board.height / board.scale}</div>
+        </div>
+        <div className="game-controls">
+          <button type="button" className="btn btn-primary" onClick={startPlay}>Start</button>
+          <button type="button" className="btn btn-primary" onClick={stopPlay}>Pause</button>
+          <button type="button" className="btn btn-primary" onClick={nextGrid}>Next</button>
+          <button type="button" className="btn btn-primary" onClick={() => clearGrid(board.size)}>Clear</button>
+        </div>
+        <div className="game-size sm-hidden">
+          <label>Size</label>
+          <button type="button" className="btn btn-primary" onClick={() => clearGrid('small')}>Small</button>
+          <button type="button" className="btn btn-primary" onClick={() => clearGrid('medium')}>Medium</button>
+          <button type="button" className="btn btn-primary" onClick={() => clearGrid('large')}>Large</button>
+        </div>
+        <div className="game-speed">
+          <label>Speed</label>
+          <button type="button" className="btn btn-primary" onClick={() => setSpeed('0.5x')}>0.5x</button>
+          <button type="button" className="btn btn-primary" onClick={() => setSpeed('1x')}>1x</button>
+          <button type="button" className="btn btn-primary" onClick={() => setSpeed('2x')}>2x</button>
+        </div>
+        <div className="about">
+          <h2>The Game of Life</h2>
+          <p>Click on a square to make that cell 'alive'.</p>
+          <p>Click on 'Next' to see what the next generation of cells looks like.</p>
+          <h3>The rules are as follows:</h3>
+          <ul>
+            <li>any living cell with fewer than 2 neighbors will die</li>
+            <li>any living cell with more than 3 neighbors will die</li>
+            <li>any living cell with exactly 2 or 3 neighbors lives on</li>
+            <li>any dead cell with exactly 3 neighbors is born</li>
+          </ul>
+          <p>More info about The Game of Life can be found <a href="https://www.math.cornell.edu/~lipa/mec/lesson6.html" target="_blank">here</a>.</p>
+        </div>
       </div>
     );
   }
@@ -543,5 +569,4 @@ ReactDOM.render(
   document.getElementById('app')
 );
 
-// TODO: Make buttons visible based on screen size
 // TODO: Kill setIntervals? on unmount?
