@@ -70,19 +70,36 @@ const initBoard = (size, width = 320, height = 544, scale = 32) => {
   return results;
 };
 
+//=======
+// Redux
+//=======
+
 // Initial State
 const initialState = {
   board: initBoard('small'),
 };
 
+//============================================================================
+// Actions
+//----------------------------------------------------------------------------
+// Types:
+// - TOGGLE_CELL  : for changing cell alive state on user click
+// - SEED_GRID    : for randomizing the grid at initial App mount
+// - NEXT_GRID    : like a single keyframe advance button for getting next gen
+// - START_PLAY   : starts running the simulation by setting isPlaying: true
+// - STOP_PLAY    : stops running the simulation by setting isPlaying: false
+// - CLEAR_GRID   : resets the counter and sets all cells to alive: 0
+// - SET_SPEED    : sets which interval timer will be calling nextGen()
+//============================================================================
+
 // Action Types
 const TOGGLE_CELL = 'board/grid/TOGGLE_CELL';
+const SEED_GRID = 'board/grid/SEED_GRID';
 const NEXT_GRID = 'board/grid/NEXT_GRID';
 const START_PLAY = 'board/START_PLAY';
 const STOP_PLAY = 'board/STOP_PLAY';
 const CLEAR_GRID = 'board/CLEAR_GRID';
 const SET_SPEED = 'board/SET_SPEED';
-const SEED_GRID = 'board/grid/SEED_GRID';
 
 // Action creators
 const toggleCell = (cell) => {
@@ -91,6 +108,12 @@ const toggleCell = (cell) => {
     payload: {
       cell
     }
+  };
+};
+
+const seedGrid = () => {
+  return {
+    type: SEED_GRID
   };
 };
 
@@ -130,13 +153,19 @@ const setSpeed = (speed) => {
   };
 };
 
-const seedGrid = () => {
-  return {
-    type: SEED_GRID
-  };
-};
+//============================================================================
+// Reducers
+//----------------------------------------------------------------------------
+// Helper functions:
+// - updateGridAfterToggle  : returns new grid with clicked cell's new state
+// - checkBoundary          : converts out-of-bound values to wrapped edge
+//                            while getting neighboring cells
+// - getNeighborhoodPop     : returns the number of alive cells in a 3x3 grid
+//                            centered around cell argument
+// - updateGridNextGen      : returns a new grid based on Game of life rules
+// - randomizeGrid          : returns a randomized grid of alive cells
+//============================================================================
 
-// Update Grid after click toggle
 const updateGridAfterToggle = (grid, cellName) => {
   return _.mapObject(grid, (cell) => {
     if (grid[cellName] === cell) {
@@ -148,7 +177,6 @@ const updateGridAfterToggle = (grid, cellName) => {
   });
 };
 
-// Return the proper index for edge cases
 const checkBoundary = (value, size) => {
   if (value === -1) {
     return size - 1;
@@ -158,7 +186,6 @@ const checkBoundary = (value, size) => {
   return value;
 };
 
-// Get neighborhood population
 const getNeighborhoodPop = (board, cell) => {
   const { width, height, scale } = board;
   const neighborHood = [];
@@ -178,7 +205,6 @@ const getNeighborhoodPop = (board, cell) => {
   }, 0);
 };
 
-// Update Grid according to next generation
 const updateGridNextGen = (board) => {
   const { width, height, grid, scale } = board;
   const nextGrid = {};
@@ -219,7 +245,6 @@ const updateGridNextGen = (board) => {
   return nextGrid;
 };
 
-// Randomize the cells' alive status
 const randomizeGrid = (board) => {
   const { width, height, grid, scale } = board;
   const nextGrid = {};
@@ -247,6 +272,10 @@ const boardReducer = (state = initialState.board, action) => {
       return Object.assign({}, state, {
         grid: updateGridAfterToggle(state.grid, action.payload.cell)
       });
+    case SEED_GRID:
+      return Object.assign({}, state, {
+        grid: randomizeGrid(state)
+      });
     case NEXT_GRID:
       return Object.assign({}, state, {
         counter: state.counter + 1,
@@ -266,10 +295,6 @@ const boardReducer = (state = initialState.board, action) => {
       return Object.assign({}, state, {
         speed: action.payload.speed
       });
-    case SEED_GRID:
-      return Object.assign({}, state, {
-        grid: randomizeGrid(state)
-      });
     default:
       return state;
   }
@@ -279,6 +304,10 @@ const boardReducer = (state = initialState.board, action) => {
 const rootReducer = combineReducers({
   board: boardReducer,
 });
+
+//=======
+// React
+//=======
 
 // Render function for updating the canvas
 const renderGrid = (board, canvas, ctx) => {
@@ -303,7 +332,11 @@ const getCursorPosition = (event, canvas, board) => {
   return cellName(x, y);
 };
 
-// Board Component renders the board's current state and adds click handler for cells
+//============================================================================
+// Board Component
+//----------------------------------------------------------------------------
+// Renders the board's current state and adds a click handler for the canvas
+//============================================================================
 class Board extends Component {
   constructor(props, context) {
     super(props, context);
@@ -345,7 +378,7 @@ class Board extends Component {
         width={board.width}
         height={board.height}
         style={{backgroundColor: 'black'}}
-        onClick={(event) => toggleCell(getCursorPosition(event, canvas, board))}
+        onClick={event => toggleCell(getCursorPosition(event, canvas, board))}
       >
         Your browser doesn't support this app.
       </canvas>
@@ -367,6 +400,11 @@ const screenSizeHelper = () => {
   return 'large';
 };
 
+//============================================================================
+// Game Component
+//----------------------------------------------------------------------------
+// Holds the playback controls and inits board's size based on screen width
+//============================================================================
 class Game extends Component {
   constructor(props, context) {
     super(props, context);
