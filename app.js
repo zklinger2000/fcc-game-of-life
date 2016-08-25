@@ -222,7 +222,7 @@ const updateGridNextGen = (board) => {
           cell,
           { alive: 0, age: 0 }
         );
-      } else if (cell.alive && pop === 3 || pop === 4) {
+      } else if (cell.alive && (pop === 3 || pop === 4)) {
         nextGrid[cellName(x, y)] = Object.assign(
           {},
           cell,
